@@ -1,0 +1,14 @@
+sudo: false
+language: python
+
+matrix:
+    include:
+      - python: 3.5
+        env: TOX_ENV=py35
+      - python: 3.5
+        env: TOX_ENV=flake8
+
+script: tox -e $TOX_ENV
+
+install:
+    - pip install tox
