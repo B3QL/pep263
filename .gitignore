@@ -1,5 +1,7 @@
 *.egg-info
+dist/
 .cache/
 .idea/
 *.swp
 __pycache__/
+.tox
