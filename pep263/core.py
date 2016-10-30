@@ -53,12 +53,19 @@ def _validate_encoding(encoding_name):
 
 def search_files(path):
     files = []
-    for entry in os.scandir(path):
-        if _is_python_file(entry):
-            files.append(entry)
-        elif _is_directory(entry):
-            subdir_files = search_files(entry.path)
-            files.extend(subdir_files)
+    try:
+        for entry in os.scandir(path):
+            if _is_python_file(entry):
+                files.append(entry)
+            elif _is_directory(entry):
+                subdir_files = search_files(entry.path)
+                files.extend(subdir_files)
+    except PermissionError as exc:
+        logger.error('Cannot open %s', exc.filename)
+    except FileNotFoundError:
+        logger.error('Directory not found %s', path)
+    except NotADirectoryError:
+        logger.error('Not a directory %s', path)
     return files
 
 
