@@ -1,24 +1,44 @@
 import re
+import logging
 from collections import namedtuple
+
+
+logger = logging.getLogger(__name__)
 
 # Official regex from https://www.python.org/dev/peps/pep-0263/
 ENCODING_PATTERN = re.compile("^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
-Encoding = namedtuple('Encoding', ['name', 'lineno'])
+EncodingInfo = namedtuple('EncodingInfo', ['name', 'lineno'])
 
 
-def check_file(f):
-    def _check_file_helper(f, lineno):
-        if lineno > 2:
-            raise LookupError('encoding not found')
+def check_encoding(filename):
+    try:
+        encoding_info = None
+        with open(filename, 'r') as f:
+            encoding_info = _check_file_encoding(f)
+    except PermissionError:
+        logger.error('Cannot open file %s', filename)
+    except FileNotFoundError:
+        logger.error('File not found %s', filename)
+    except LookupError as exc:
+        msg = str(exc).capitalize()
+        logger.warning('%s in %s', msg, filename)
+    except ValueError as exc:
+        msg = str(exc).capitalize()
+        logger.warning('%s in %s', msg, filename)
+    return encoding_info
 
-        line = f.readline()
-        line_match = re.search(ENCODING_PATTERN, line)
-        if line_match:
-            encoding_name = _validate_encoding(line_match.group(1))
-            return Encoding(name=encoding_name, lineno=lineno)
-        else:
-            return _check_file_helper(f, lineno + 1)
-    return _check_file_helper(f, 1)
+
+def _check_file_encoding(f, lineno=1):
+    if lineno > 2:
+        raise LookupError('encoding not found')
+
+    line = f.readline()
+    line_match = re.search(ENCODING_PATTERN, line)
+    if line_match:
+        encoding_name = _validate_encoding(line_match.group(1))
+        return EncodingInfo(name=encoding_name, lineno=lineno)
+    else:
+        return _check_file_encoding(f, lineno + 1)
 
 
 def _validate_encoding(encoding_name):
