@@ -75,3 +75,14 @@ def _is_python_file(entry):
 
 def _is_directory(entry):
     return entry.is_dir()
+
+
+def append_encoding(f, encoding_name):
+    first_line = f.readline()
+    f.seek(0)
+    if first_line.startswith('#!'):
+        f.write(first_line)
+        f.write('# -*- coding: %s -*-\n' % encoding_name)
+    else:
+        f.write('# -*- coding: %s -*-\n' % encoding_name)
+        f.write(first_line)
