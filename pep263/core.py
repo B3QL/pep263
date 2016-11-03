@@ -1,3 +1,4 @@
+import os
 import re
 import logging
 from collections import namedtuple
@@ -48,3 +49,29 @@ def _validate_encoding(encoding_name):
     except LookupError as e:
         raise ValueError(e)
     return encoding_name
+
+
+def search_files(path):
+    files = []
+    try:
+        for entry in os.scandir(path):
+            if _is_python_file(entry):
+                files.append(entry)
+            elif _is_directory(entry):
+                subdir_files = search_files(entry.path)
+                files.extend(subdir_files)
+    except PermissionError as exc:
+        logger.error('Cannot open %s', exc.filename)
+    except FileNotFoundError:
+        logger.error('Directory not found %s', path)
+    except NotADirectoryError:
+        logger.error('Not a directory %s', path)
+    return files
+
+
+def _is_python_file(entry):
+    return entry.is_file() and entry.name.endswith('.py')
+
+
+def _is_directory(entry):
+    return entry.is_dir()
