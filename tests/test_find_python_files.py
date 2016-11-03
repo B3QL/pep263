@@ -32,11 +32,14 @@ def test_python_files_different_deep_level(tmpdir):
     test_file_subdir = test_subdir.ensure('test_subdir.py')
     result = search_files(test_dir.strpath)
     assert len(result) == 2
-    assert result[0].name == 'test.py'
-    assert result[0].path == test_file.strpath
-    assert result[1].name == 'test_subdir.py'
-    assert result[1].path == test_file_subdir.strpath
-    assert test_dir.strpath != test_subdir.strpath
+
+    filenames = [e.name for e in result]
+    assert 'test.py' in filenames
+    assert 'test_subdir.py' in filenames
+
+    paths = [e.path for e in result]
+    assert test_file.strpath in paths
+    assert test_file_subdir.strpath in paths
 
 
 def test_subdirectory_without_permission(caplog, tmpdir):
@@ -62,6 +65,7 @@ def test_multiple_subdirectory_one_without_permission(caplog, tmpdir):
     test_subdir_3.ensure('test_subdir_3.py')
     result = search_files(test_dir.strpath)
     assert len(result) == 2
+
     filenames = [e.name for e in result]
     assert 'test_subdir_2.py' in filenames
     assert 'test_subdir_3.py' in filenames
