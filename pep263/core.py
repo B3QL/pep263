@@ -2,6 +2,7 @@ import os
 import re
 import logging
 from collections import namedtuple
+from .decorators import seek_file
 
 
 logger = logging.getLogger(__name__)
@@ -77,12 +78,40 @@ def _is_directory(entry):
     return entry.is_dir()
 
 
-def append_encoding(f, encoding_name):
-    first_line = f.readline()
-    f.seek(0)
-    if first_line.startswith('#!'):
-        f.write(first_line)
-        f.write('# -*- coding: %s -*-\n' % encoding_name)
+def _append_file_encoding(f, encoding_name, replace=False):
+    encoding_name = _validate_encoding(encoding_name)
+    encoding_line = '# -*- coding: %s -*-\n' % encoding_name
+
+    try:
+        encoding_info = _check_file_encoding(f)
+    except LookupError:
+        lineno = _find_lineno(f)
     else:
-        f.write('# -*- coding: %s -*-\n' % encoding_name)
-        f.write(first_line)
+        if replace:
+            lineno = encoding_info.lineno
+        else:
+            raise RuntimeError('encoding already exists')
+
+    _write_line(f, lineno, encoding_line, replace)
+
+
+@seek_file
+def _find_lineno(f):
+    first_line = f.readline()
+    if first_line.startswith('#!'):
+        return 2
+    else:
+        return 1
+
+
+@seek_file
+def _write_line(f, lineno, content, replace):
+    file_content = f.readlines()
+
+    if replace:
+        file_content[lineno - 1] = content
+    else:
+        file_content.insert(lineno - 1, content)
+
+    f.seek(0)
+    f.write(''.join(file_content))
