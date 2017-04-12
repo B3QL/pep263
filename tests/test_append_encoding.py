@@ -1,11 +1,39 @@
 import io
 import pytest
-from pep263.core import _append_file_encoding
+from pep263.core import _append_file_encoding, append_encoding
 
 
 def read_lines(f):
     lines = f.getvalue().split('\n')
     return [line + '\n' for line in lines if line]
+
+
+def test_not_a_file(caplog, tmpdir):
+    test_dir = tmpdir.mkdir('test')
+    append_encoding(test_dir.strpath, 'utf-8')
+    assert len(caplog.records) == 1
+    assert 'Not a file' in caplog.text
+
+
+def test_file_without_permission(caplog, tmpdir):
+    test_dir = tmpdir.mkdir('test')
+    test_file = test_dir.ensure('test.py')
+    test_file.chmod(000)
+    append_encoding(test_file.strpath, 'utf-8')
+    assert len(caplog.records) == 1
+    assert 'Cannot open a file' in caplog.text
+
+
+def test_file_not_exist(caplog):
+    append_encoding('no_existing_file.py', 'utf-8')
+    assert len(caplog.records) == 1
+    assert 'File not found' in caplog.text
+
+
+def test_file_encoding_already_exist(caplog, tmpdir):
+    test_dir = tmpdir.mkdir('test')
+    test_file = test_dir.ensure('test.py')
+    test_file.write('# -*- coding: utf-8 -*-\n')
 
 
 def test_append_empty_file_utf8_encoding():

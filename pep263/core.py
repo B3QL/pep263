@@ -78,6 +78,18 @@ def _is_directory(entry):
     return entry.is_dir()
 
 
+def append_encoding(filename, encoding_name, force=False):
+    try:
+        with open(filename, 'r+') as f:
+            _append_file_encoding(f, encoding_name, force)
+    except PermissionError:
+        logger.error('Cannot open a file %s', filename)
+    except FileNotFoundError:
+        logger.error('File not found %s', filename)
+    except IsADirectoryError:
+        logger.error('Not a file %s', filename)
+
+
 def _append_file_encoding(f, encoding_name, replace=False):
     encoding_name = _validate_encoding(encoding_name)
     encoding_line = '# -*- coding: %s -*-\n' % encoding_name
