@@ -17,6 +17,7 @@ setup(
     version=find_version('pep263', '__init__.py'),
     license='MIT',
     packages=find_packages(exclude=['docs', 'tests*']),
+    tests_require=['tox'],
     classifiers=[
         'License :: OSI Approved :: MIT License',
     ],
