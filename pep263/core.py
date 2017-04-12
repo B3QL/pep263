@@ -9,28 +9,27 @@ logger = logging.getLogger(__name__)
 
 # Official regex from https://www.python.org/dev/peps/pep-0263/
 ENCODING_PATTERN = re.compile("^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
-EncodingInfo = namedtuple('EncodingInfo', ['name', 'lineno'])
+ENCODING_LINE = '# -*- coding: {encoding_name} -*-\n'
+EncodingInfo = namedtuple('EncodingInfo', 'name lineno')
 
 
-def check_encoding(filename):
+def find_encoding(filename):
+    encoding_info = None
     try:
-        encoding_info = None
         with open(filename, 'r') as f:
-            encoding_info = _check_file_encoding(f)
+            encoding_info = _find_file_encoding(f)
     except PermissionError:
         logger.error('Cannot open file %s', filename)
     except FileNotFoundError:
         logger.error('File not found %s', filename)
-    except LookupError as exc:
+    except (LookupError, ValueError) as exc:
         msg = str(exc).capitalize()
         logger.warning('%s in %s', msg, filename)
-    except ValueError as exc:
-        msg = str(exc).capitalize()
-        logger.warning('%s in %s', msg, filename)
+
     return encoding_info
 
 
-def _check_file_encoding(f, lineno=1):
+def _find_file_encoding(f, lineno=1):
     if lineno > 2:
         raise LookupError('encoding not found')
 
@@ -40,7 +39,7 @@ def _check_file_encoding(f, lineno=1):
         encoding_name = _validate_encoding(line_match.group(1))
         return EncodingInfo(name=encoding_name, lineno=lineno)
     else:
-        return _check_file_encoding(f, lineno + 1)
+        return _find_file_encoding(f, lineno + 1)
 
 
 def _validate_encoding(encoding_name):
@@ -56,9 +55,9 @@ def search_files(path):
     files = []
     try:
         for entry in os.scandir(path):
-            if _is_python_file(entry):
+            if _is_py_file(entry):
                 files.append(entry)
-            elif _is_directory(entry):
+            elif entry.is_dir():
                 subdir_files = search_files(entry.path)
                 files.extend(subdir_files)
     except PermissionError as exc:
@@ -70,12 +69,8 @@ def search_files(path):
     return files
 
 
-def _is_python_file(entry):
+def _is_py_file(entry):
     return entry.is_file() and entry.name.endswith('.py')
-
-
-def _is_directory(entry):
-    return entry.is_dir()
 
 
 def append_encoding(filename, encoding_name, force=False):
@@ -92,10 +87,9 @@ def append_encoding(filename, encoding_name, force=False):
 
 def _append_file_encoding(f, encoding_name, replace=False):
     encoding_name = _validate_encoding(encoding_name)
-    encoding_line = '# -*- coding: %s -*-\n' % encoding_name
-
+    encoding_line = ENCODING_LINE.format(**locals())
     try:
-        encoding_info = _check_file_encoding(f)
+        encoding_info = _find_file_encoding(f)
     except LookupError:
         lineno = _find_lineno(f)
     else:
@@ -110,20 +104,19 @@ def _append_file_encoding(f, encoding_name, replace=False):
 @seek_file
 def _find_lineno(f):
     first_line = f.readline()
-    if first_line.startswith('#!'):
-        return 2
-    else:
-        return 1
+    shebang = first_line.startswith('#!')
+    return 2 if shebang else 1
 
 
 @seek_file
 def _write_line(f, lineno, content, replace):
     file_content = f.readlines()
+    line_index = lineno - 1
 
     if replace:
-        file_content[lineno - 1] = content
+        file_content[line_index] = content
     else:
-        file_content.insert(lineno - 1, content)
+        file_content.insert(line_index, content)
 
     f.seek(0)
-    f.write(''.join(file_content))
+    f.writelines(file_content)
