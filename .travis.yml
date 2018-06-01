@@ -14,3 +14,7 @@ script: pytest --pylama -vvv
 install:
     - pip install --upgrade setuptools pip
     - pip install -e .[test]
+
+matrix:
+  allow_failures:
+  - python: "3.7-dev" # Pylama failing on 3.7 <https://github.com/klen/pylama/pull/120>
