@@ -30,6 +30,7 @@ setup(
     packages=find_packages(exclude=['docs', 'tests']),
     install_requires=[
         'click==6.7',
+        'colorama==0.3.9',
     ],
     tests_require=tests_requirements,
     extras_require={

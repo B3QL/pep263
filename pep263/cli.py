@@ -7,6 +7,7 @@ from . import __version__
 from .core import find_encoding
 from .core import logger as core_logger
 from .core import search_files
+from .errors import error_colour
 
 
 @click.option('--force', '-f', is_flag=True)
@@ -18,7 +19,7 @@ def main(path, force):
     with disable_logger(core_logger):
         for filename in search_files(path):
             encoding = find_encoding(filename)
-            click.echo('{0}: {1}'.format(filename, encoding.name))
+            click.secho('{0}: {1}'.format(filename, encoding.name), fg=error_colour(encoding.error))
 
 
 @contextmanager
