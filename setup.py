@@ -16,6 +16,8 @@ def find_version(*file_paths):
 test_requirements = [
     'pytest==3.6.0',
     'pylama==7.4.3',
+    'pylint==1.9.1',
+    'pylama-pylint==3.0.1',
 ]
 
 setup(
