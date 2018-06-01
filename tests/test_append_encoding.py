@@ -1,5 +1,6 @@
 """Append encoding to files tests."""
 import pytest
+
 from pep263.core import _append_file_encoding, append_encoding
 
 from .conftest import assert_lines, create_file

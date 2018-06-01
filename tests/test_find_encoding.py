@@ -1,5 +1,6 @@
 """Finding encoding in files tests."""
 import pytest
+
 from pep263.core import _find_file_encoding, find_encoding
 
 from .conftest import create_file
