@@ -1,14 +1,8 @@
 """Append encoding to files tests."""
-import io
-
 import pytest
-
 from pep263.core import _append_file_encoding, append_encoding
 
-
-def read_lines(f):
-    lines = f.getvalue().split('\n')
-    return [line + '\n' for line in lines if line]
+from .conftest import assert_lines, create_file
 
 
 def test_not_a_file(caplog, tmpdir):
@@ -39,88 +33,93 @@ def test_file_encoding_already_exist(caplog, tmpdir):
     test_file.write('# -*- coding: utf-8 -*-\n')
 
 
-def test_append_empty_file_utf8_encoding():
-    f = io.StringIO()
-    _append_file_encoding(f, 'utf-8')
-    assert f.getvalue() == '# -*- coding: utf-8 -*-\n'
+def test_append_empty_file_utf8_encoding(empty_file):
+    _append_file_encoding(empty_file, 'utf-8')
+    assert empty_file.getvalue() == '# -*- coding: utf-8 -*-\n'
 
 
-def test_append_empty_file_utf16_encoding():
-    f = io.StringIO()
-    _append_file_encoding(f, 'utf-16')
-    assert f.getvalue() == '# -*- coding: utf-16 -*-\n'
+def test_append_empty_file_utf16_encoding(empty_file):
+    _append_file_encoding(empty_file, 'utf-16')
+    assert empty_file.getvalue() == '# -*- coding: utf-16 -*-\n'
 
 
-def test_append_empty_file_invalid_encoding():
-    f = io.StringIO()
+def test_append_empty_file_invalid_encoding(empty_file):
     with pytest.raises(ValueError) as excinfo:
-        _append_file_encoding(f, 'utf-42')
+        _append_file_encoding(empty_file, 'utf-42')
     assert str(excinfo.value) == 'unknown encoding: utf-42'
 
 
-def test_append_shebanged_file_utf8_encoding():
-    initial_content = '#!/usr/bin/env python\n'
-    f = io.StringIO(initial_content)
-    _append_file_encoding(f, 'utf-8')
-    file_content = read_lines(f)
-    assert len(file_content) == 2
-    assert file_content[0] == initial_content
-    assert file_content[1] == '# -*- coding: utf-8 -*-\n'
+@create_file('#!/usr/bin/env python')
+def test_append_shebanged_file_utf8_encoding(file):
+    _append_file_encoding(file, 'utf-8')
+    expected_lines = [
+        '#!/usr/bin/env python',
+        '# -*- coding: utf-8 -*-'
+    ]
+    assert_lines(file, expected_lines)
 
 
-def test_append_commented_file_utf8_encoding():
-    initial_content = '# this is a comment ;-)\n'
-    f = io.StringIO(initial_content)
-    _append_file_encoding(f, 'utf-8')
-    file_content = read_lines(f)
-    assert len(file_content) == 2
-    assert file_content[0] == '# -*- coding: utf-8 -*-\n'
-    assert file_content[1] == initial_content
+@create_file('# this is a comment ;-)')
+def test_append_commented_file_utf8_encoding(file):
+    _append_file_encoding(file, 'utf-8')
+    expected_lines = [
+        '# -*- coding: utf-8 -*-',
+        '# this is a comment ;-)'
+    ]
+    assert_lines(file, expected_lines)
 
 
-def test_append_shebanged_and_commented_file_utf8_encoding():
-    initial_content = ['#!/usr/bin/env python\n',
-                       '# this is a comment ;-)\n']
-    f = io.StringIO(''.join(initial_content))
-    _append_file_encoding(f, 'utf-8')
-    file_content = read_lines(f)
-    assert len(file_content) == 3
-    assert file_content[0] == initial_content[0]
-    assert file_content[1] == '# -*- coding: utf-8 -*-\n'
-    assert file_content[2] == initial_content[1]
+@create_file(
+    '#!/usr/bin/env python',
+    '# this is a comment ;-)'
+)
+def test_append_shebanged_and_commented_file_utf8_encoding(file):
+    _append_file_encoding(file, 'utf-8')
+    expected_lines = [
+        '#!/usr/bin/env python',
+        '# -*- coding: utf-8 -*-',
+        '# this is a comment ;-)'
+    ]
+    assert_lines(file, expected_lines)
 
 
-def test_append_multicommented_file_utf8_encodign():
-    initial_content = ['# this is a first comment\n',
-                       '# this is a second comment\n']
-    f = io.StringIO(''.join(initial_content))
-    _append_file_encoding(f, 'utf-8')
-    file_content = read_lines(f)
-    assert len(file_content) == 3
-    assert file_content[0] == '# -*- coding: utf-8 -*-\n'
-    assert file_content[1] == initial_content[0]
-    assert file_content[2] == initial_content[1]
+@create_file(
+    '# this is a first comment',
+    '# this is a second comment'
+)
+def test_append_multicommented_file_utf8_encoding(file):
+    _append_file_encoding(file, 'utf-8')
+    expected_lines = [
+        '# -*- coding: utf-8 -*-',
+        '# this is a first comment',
+        '# this is a second comment'
+    ]
+    assert_lines(file, expected_lines)
 
 
-def test_append_with_encoding_already_set_first_line():
-    initial_content = ['# -*- coding: utf-8 -*-\n',
-                       '# this is a second comment\n']
-    f = io.StringIO(''.join(initial_content))
+@create_file(
+    '# -*- coding: utf-8 -*-',
+    '# this is a second comment'
+)
+def test_append_with_encoding_already_set_first_line(file):
     with pytest.raises(RuntimeError) as excinfo:
-        _append_file_encoding(f, 'utf-16')
-    file_content = read_lines(f)
+        _append_file_encoding(file, 'utf-16')
     assert str(excinfo.value) == 'encoding already exists'
-    assert len(file_content) == 2
-    assert file_content[0] == initial_content[0]
-    assert file_content[1] == initial_content[1]
+    expected_lines = [
+        '# -*- coding: utf-8 -*-',
+        '# this is a second comment'
+    ]
+    assert_lines(file, expected_lines)
 
 
-def test_force_append_with_encoding_already_set_first_line():
-    initial_content = ['# -*- coding: utf-8 -*-\n',
-                       '# this is a second comment\n']
-    f = io.StringIO(''.join(initial_content))
-    _append_file_encoding(f, 'utf-16', replace=True)
-    file_content = read_lines(f)
-    assert len(file_content) == 2
-    assert file_content[0] == '# -*- coding: utf-16 -*-\n'
-    assert file_content[1] == initial_content[1]
+@create_file(
+    '# -*- coding: utf-8 -*-',
+    '# this is a second comment'
+)
+def test_force_append_with_encoding_already_set_first_line(file):
+    _append_file_encoding(file, 'utf-16', replace=True)
+    expected_lines = [
+        '# -*- coding: utf-16 -*-',
+        '# this is a second comment'
+    ]
+    assert_lines(file, expected_lines)
