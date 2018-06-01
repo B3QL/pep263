@@ -36,6 +36,11 @@ setup(
         ':python_version<"3.5"': ["scandir==1.7"],
         'test': tests_requirements,
     },
+    entry_points={
+        'console_scripts': [
+            'pep263=pep263.cli:main'
+        ],
+    },
     classifiers=[
         'License :: OSI Approved :: MIT License',
     ],
