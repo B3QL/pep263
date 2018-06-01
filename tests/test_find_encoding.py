@@ -18,7 +18,8 @@ def test_file_without_permission(caplog, tmpdir):
 
 def test_file_not_found(caplog):
     filename = 'not_existing_file.py'
-    find_encoding(filename)
+    result = find_encoding(filename)
+    assert result.name == 'no encoding'
     assert len(caplog.records) == 1
     assert 'File not found' in caplog.text
     assert filename in caplog.text

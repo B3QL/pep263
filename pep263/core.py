@@ -21,7 +21,7 @@ EncodingInfo = namedtuple('EncodingInfo', 'name lineno')
 
 def find_encoding(filename):
     """Find information about encoding in file."""
-    encoding_info = None
+    encoding_info = EncodingInfo('no encoding', -1)
     try:
         with open(filename, 'r') as f:
             encoding_info = _find_file_encoding(f)
