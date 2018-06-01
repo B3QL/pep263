@@ -66,6 +66,5 @@ def test_not_existing_path(caplog):
 def test_not_a_directory(caplog, tmpdir):
     test_dir = tmpdir.mkdir('test')
     test_file = test_dir.ensure('test.py')
-    search_files(test_file.strpath)
-    assert len(caplog.records) == 1
-    assert 'Not a directory ' in caplog.text
+    result, = search_files(test_file.strpath)
+    assert result == test_file.strpath

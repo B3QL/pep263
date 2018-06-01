@@ -72,7 +72,7 @@ def search_files(path):
     except FileNotFoundError:
         logger.error('Directory not found %s', path)
     except NotADirectoryError:
-        logger.error('Not a directory %s', path)
+        files.append(path)
     return files
 
 
