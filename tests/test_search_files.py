@@ -1,9 +1,10 @@
+"""Searching for python files tests."""
 from pep263 import search_files
 
 
 def test_no_python_files(tmpdir):
     test_dir = tmpdir.mkdir('test')
-    assert len(search_files(test_dir.strpath)) == 0
+    assert search_files(test_dir.strpath) == []
 
 
 def test_one_python_file_in_root_dir(tmpdir):

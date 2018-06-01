@@ -1,6 +1,9 @@
+"""Finding encoding in files tests."""
 import io
+
 import pytest
-from pep263.core import find_encoding, _find_file_encoding, EncodingInfo
+
+from pep263.core import EncodingInfo, _find_file_encoding, find_encoding
 
 
 def test_file_without_permission(caplog, tmpdir):

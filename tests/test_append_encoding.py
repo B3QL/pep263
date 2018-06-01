@@ -1,5 +1,8 @@
+"""Append encoding to files tests."""
 import io
+
 import pytest
+
 from pep263.core import _append_file_encoding, append_encoding
 
 
@@ -39,13 +42,13 @@ def test_file_encoding_already_exist(caplog, tmpdir):
 def test_append_empty_file_utf8_encoding():
     f = io.StringIO()
     _append_file_encoding(f, 'utf-8')
-    assert '# -*- coding: utf-8 -*-\n' == f.getvalue()
+    assert f.getvalue() == '# -*- coding: utf-8 -*-\n'
 
 
 def test_append_empty_file_utf16_encoding():
     f = io.StringIO()
     _append_file_encoding(f, 'utf-16')
-    assert '# -*- coding: utf-16 -*-\n' == f.getvalue()
+    assert f.getvalue() == '# -*- coding: utf-16 -*-\n'
 
 
 def test_append_empty_file_invalid_encoding():

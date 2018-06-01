@@ -1,9 +1,12 @@
+"""Package configuration."""
 import os
 import re
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 
 def find_version(*file_paths):
+    """Find version information in file."""
     path = os.path.join(os.path.dirname(__file__), *file_paths)
     version_file = open(path).read()
     version_pattern = r"^__version__ = ['\"]([^'\"]*)['\"]"
