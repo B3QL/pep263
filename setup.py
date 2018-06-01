@@ -28,9 +28,12 @@ setup(
     version=find_version('pep263', '__init__.py'),
     license='MIT',
     packages=find_packages(exclude=['docs', 'tests']),
+    install_requires=[
+        'click==6.7',
+    ],
     tests_require=tests_requirements,
     extras_require={
-        ':python_version<"3.5"': ["scandir"],
+        ':python_version<"3.5"': ["scandir==1.7"],
         'test': tests_requirements,
     },
     classifiers=[
