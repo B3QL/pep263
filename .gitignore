@@ -5,3 +5,4 @@ dist/
 *.swp
 __pycache__/
 .tox
+.pytest_cache/
