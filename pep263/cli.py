@@ -26,7 +26,7 @@ def validate_encoding_name(ctx, param, value):
 @click.command()
 @click.version_option(version=__version__)
 def main(path, append, force):
-    """Manage file encodings."""
+    """Manage source files encodings."""
     with disable_logger(core_logger):
         for filename in search_files(path):
             if append:
