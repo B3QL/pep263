@@ -32,10 +32,10 @@ def test_python_files_different_deep_level(tmpdir):
     result = search_files(test_dir.strpath)
 
     filenames = [e.name for e in result]
-    assert filenames == ['test.py', 'test_subdir.py']
+    assert sorted(filenames) == sorted(['test.py', 'test_subdir.py'])
 
     paths = [e.path for e in result]
-    assert paths == [test_file.strpath, test_file_subdir.strpath]
+    assert sorted(paths) == sorted([test_file.strpath, test_file_subdir.strpath])
 
 
 def test_subdirectory_without_permission(caplog, tmpdir):
