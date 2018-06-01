@@ -26,6 +26,8 @@ tests_requirements = [
 setup(
     name='pep263',
     version=find_version('pep263', '__init__.py'),
+    author='Bartłomiej Kurzeja',
+    url='https://github.com/B3QL/pep263',
     license='MIT',
     packages=find_packages(exclude=['docs', 'tests']),
     install_requires=[
@@ -43,6 +45,10 @@ setup(
         ],
     },
     classifiers=[
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'License :: OSI Approved :: MIT License',
     ],
 )
