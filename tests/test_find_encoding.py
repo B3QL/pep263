@@ -1,6 +1,9 @@
-import io
+"""Finding encoding in files tests."""
 import pytest
-from pep263.core import find_encoding, _find_file_encoding, EncodingInfo
+
+from pep263.core import _find_file_encoding, find_encoding
+
+from .conftest import create_file
 
 
 def test_file_without_permission(caplog, tmpdir):
@@ -40,79 +43,73 @@ def test_file_with_invalid_coding_2(caplog, tmpdir):
     assert test_file.strpath in caplog.text
 
 
-def test_file_without_content_2():
-    f = io.StringIO()
+def test_file_without_content_2(empty_file):
     with pytest.raises(LookupError) as excinfo:
-        _find_file_encoding(f)
+        _find_file_encoding(empty_file)
     assert str(excinfo.value) == 'encoding not found'
 
 
-def test_file_with_utf8_coding():
-    f = io.StringIO('# -*- coding: utf-8 -*-')
-    encoding = _find_file_encoding(f)
-    assert isinstance(encoding, EncodingInfo)
+@create_file('# -*- coding: utf-8 -*-')
+def test_file_with_utf8_coding(file):
+    encoding = _find_file_encoding(file)
     assert encoding.name == 'utf-8'
     assert encoding.lineno == 1
 
 
-def test_file_with_utf16_coding():
-    f = io.StringIO('# -*- coding: utf-16 -*-')
-    encoding = _find_file_encoding(f)
-    assert isinstance(encoding, EncodingInfo)
+@create_file('# -*- coding: utf-16 -*-')
+def test_file_with_utf16_coding(file):
+    encoding = _find_file_encoding(file)
     assert encoding.name == 'utf-16'
     assert encoding.lineno == 1
 
 
-def test_file_with_utf8_coding_in_second_line():
-    file_content = ['#!/usr/bin/env python',
-                    '# -*- coding: utf-8 -*-']
-
-    f = io.StringIO('\n'.join(file_content))
-    encoding = _find_file_encoding(f)
-    assert isinstance(encoding, EncodingInfo)
+@create_file(
+    '#!/usr/bin/env python',
+    '# -*- coding: utf-8 -*-'
+)
+def test_file_with_utf8_coding_in_second_line(file):
+    encoding = _find_file_encoding(file)
     assert encoding.name == 'utf-8'
     assert encoding.lineno == 2
 
 
-def test_file_with_utf8_plain_text_coding():
-    f = io.StringIO('# This Python file uses the following encoding: utf-8')
-    encoding = _find_file_encoding(f)
-    assert isinstance(encoding, EncodingInfo)
+@create_file('# This Python file uses the following encoding: utf-8')
+def test_file_with_utf8_plain_text_coding(file):
+    encoding = _find_file_encoding(file)
     assert encoding.name == 'utf-8'
     assert encoding.lineno == 1
 
 
-def test_file_with_utf8_editor_coding():
-    file_content = ['#!/usr/local/bin/python',
-                    '# coding: latin-1']
-
-    f = io.StringIO('\n'.join(file_content))
-    encoding = _find_file_encoding(f)
-    assert isinstance(encoding, EncodingInfo)
+@create_file(
+    '#!/usr/local/bin/python',
+    '# coding: latin-1'
+)
+def test_file_with_utf8_editor_coding(file):
+    encoding = _find_file_encoding(file)
     assert encoding.name == 'latin-1'
     assert encoding.lineno == 2
 
 
-def test_file_with_missing_coding_prefix():
-    f = io.StringIO('# utf-8')
+@create_file('# utf-8')
+def test_file_with_missing_coding_prefix(file):
     with pytest.raises(LookupError) as excinfo:
-        _find_file_encoding(f)
+        _find_file_encoding(file)
     assert str(excinfo.value) == 'encoding not found'
 
 
-def test_file_with_utf8_coding_in_third_line():
-    file_content = ['#!/usr/local/bin/python',
-                    '#',
-                    '# -*- coding: latin-1 -*-']
-
-    f = io.StringIO('\n'.join(file_content))
+@create_file(
+    '#!/usr/local/bin/python',
+    '#',
+    '# -*- coding: latin-1 -*-'
+)
+def test_file_with_utf8_coding_in_third_line(file):
     with pytest.raises(LookupError) as excinfo:
-        _find_file_encoding(f)
+        _find_file_encoding(file)
     assert str(excinfo.value) == 'encoding not found'
 
 
-def test_file_with_invalid_coding():
-    f = io.StringIO('# -*- coding: utf-42 -*-')
+@create_file('# -*- coding: utf-42 -*-')
+def test_file_with_invalid_coding(file):
     with pytest.raises(ValueError) as excinfo:
-        _find_file_encoding(f)
+        _find_file_encoding(file)
     assert str(excinfo.value) == 'unknown encoding: utf-42'

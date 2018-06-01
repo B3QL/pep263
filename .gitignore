@@ -1,7 +1,9 @@
 *.egg-info
+.eggs/
 dist/
 .cache/
 .idea/
 *.swp
 __pycache__/
 .tox
+.pytest_cache/

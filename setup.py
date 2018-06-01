@@ -1,9 +1,12 @@
+"""Package configuration."""
 import os
 import re
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 
 def find_version(*file_paths):
+    """Find version information in file."""
     path = os.path.join(os.path.dirname(__file__), *file_paths)
     version_file = open(path).read()
     version_pattern = r"^__version__ = ['\"]([^'\"]*)['\"]"
@@ -12,12 +15,24 @@ def find_version(*file_paths):
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
 
+
+tests_requirements = [
+    'pytest==3.6.0',
+    'pylama==7.4.3',
+    'pylint==1.9.1',
+    'pylama-pylint==3.0.1',
+]
+
 setup(
     name='pep263',
     version=find_version('pep263', '__init__.py'),
     license='MIT',
-    packages=find_packages(exclude=['docs', 'tests*']),
-    tests_require=['tox'],
+    packages=find_packages(exclude=['docs', 'tests']),
+    tests_require=tests_requirements,
+    extras_require={
+        ':python_version<"3.5"': ["scandir"],
+        'test': tests_requirements,
+    },
     classifiers=[
         'License :: OSI Approved :: MIT License',
     ],

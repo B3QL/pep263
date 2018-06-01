@@ -1,8 +1,14 @@
-import os
-import re
+"""Core functionalities."""
 import logging
+import re
 from collections import namedtuple
+
 from .decorators import seek_file
+
+try:
+    from os import scandir
+except ImportError:
+    from scandir import scandir
 
 
 logger = logging.getLogger(__name__)
@@ -14,6 +20,7 @@ EncodingInfo = namedtuple('EncodingInfo', 'name lineno')
 
 
 def find_encoding(filename):
+    """Find information about encoding in file."""
     encoding_info = None
     try:
         with open(filename, 'r') as f:
@@ -38,8 +45,7 @@ def _find_file_encoding(f, lineno=1):
     if line_match:
         encoding_name = _validate_encoding(line_match.group(1))
         return EncodingInfo(name=encoding_name, lineno=lineno)
-    else:
-        return _find_file_encoding(f, lineno + 1)
+    return _find_file_encoding(f, lineno + 1)
 
 
 def _validate_encoding(encoding_name):
@@ -52,9 +58,10 @@ def _validate_encoding(encoding_name):
 
 
 def search_files(path):
+    """Find recursively python files in path."""
     files = []
     try:
-        for entry in os.scandir(path):
+        for entry in scandir(path):
             if _is_py_file(entry):
                 files.append(entry)
             elif entry.is_dir():
@@ -74,6 +81,7 @@ def _is_py_file(entry):
 
 
 def append_encoding(filename, encoding_name, force=False):
+    """Append encoding to file."""
     try:
         with open(filename, 'r+') as f:
             _append_file_encoding(f, encoding_name, force)
