@@ -2,13 +2,13 @@
 import enum
 
 
-class EncodingError(enum.Enum):
+class EncodingError(enum.IntEnum):
     """Encoding error types."""
 
-    OK = enum.auto()
-    NOT_FOUND = enum.auto()
-    PERMISSION_ERROR = enum.auto()
-    INVALID_ENCODING = enum.auto()
+    OK = 0
+    NOT_FOUND = 1
+    PERMISSION_ERROR = 2
+    INVALID_ENCODING = 3
 
 
 ERRORS_COLOUR = {
