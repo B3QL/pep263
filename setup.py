@@ -36,7 +36,7 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-test_requirements = [
+tests_requirements = [
     'pytest==3.6.0',
     'pylama==7.4.3',
     'pylint==1.9.1',
@@ -48,8 +48,11 @@ setup(
     version=find_version('pep263', '__init__.py'),
     license='MIT',
     packages=find_packages(exclude=['docs', 'tests']),
-    tests_require=test_requirements,
+    tests_require=tests_requirements,
     cmdclass={'test': PyTest},
+    extras_require={
+        ':python_version<"3.5"': ["scandir"],
+    },
     classifiers=[
         'License :: OSI Approved :: MIT License',
     ],

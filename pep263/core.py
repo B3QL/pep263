@@ -1,10 +1,15 @@
 """Core functionalities."""
 import logging
-import os
 import re
 from collections import namedtuple
 
 from .decorators import seek_file
+
+try:
+    from os import scandir
+except ImportError:
+    from scandir import scandir
+
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +61,7 @@ def search_files(path):
     """Find recursively python files in path."""
     files = []
     try:
-        for entry in os.scandir(path):
+        for entry in scandir(path):
             if _is_py_file(entry):
                 files.append(entry)
             elif entry.is_dir():
