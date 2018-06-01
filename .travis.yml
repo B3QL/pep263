@@ -9,8 +9,8 @@ python:
   - "3.6-dev"
   - "3.7-dev"
 
-script: python setup.py test -a --pylama -vvv
+script: pytest --pylama -vvv
 
 install:
     - pip install --upgrade setuptools pip
-    - pip install -e .
+    - pip install -e .[test]

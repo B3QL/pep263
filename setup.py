@@ -1,10 +1,8 @@
 """Package configuration."""
 import os
 import re
-import sys
 
 from setuptools import find_packages, setup
-from setuptools.command.test import test as TestCommand
 
 
 def find_version(*file_paths):
@@ -16,24 +14,6 @@ def find_version(*file_paths):
     if version_match:
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
-
-
-class PyTest(TestCommand):
-    """Pytest tests runner."""
-
-    user_options = [('pytest-args=', 'a', "Arguments to pass to pytest")]
-
-    def __init__(self, *args, **kwargs):
-        """Initalize."""
-        super(PyTest, self).__init__(*args, **kwargs)
-        self.pytest_args = ''
-
-    def run_tests(self):
-        """Run tests."""
-        import shlex
-        import pytest  # import here, cause outside the eggs aren't loaded
-        errno = pytest.main(shlex.split(self.pytest_args))
-        sys.exit(errno)
 
 
 tests_requirements = [
@@ -49,9 +29,9 @@ setup(
     license='MIT',
     packages=find_packages(exclude=['docs', 'tests']),
     tests_require=tests_requirements,
-    cmdclass={'test': PyTest},
     extras_require={
         ':python_version<"3.5"': ["scandir"],
+        'test': tests_requirements,
     },
     classifiers=[
         'License :: OSI Approved :: MIT License',
