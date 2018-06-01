@@ -63,7 +63,7 @@ def search_files(path):
     try:
         for entry in scandir(path):
             if _is_py_file(entry):
-                files.append(entry)
+                files.append(entry.path)
             elif entry.is_dir():
                 subdir_files = search_files(entry.path)
                 files.extend(subdir_files)
