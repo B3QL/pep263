@@ -12,4 +12,5 @@ python:
 script: python setup.py test -a --pylama -vvv
 
 install:
+    - pip install --upgrade setuptools pip
     - pip install -e .
