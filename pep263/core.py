@@ -49,12 +49,13 @@ def _find_file_encoding(f, lineno=1):
     line = f.readline()
     line_match = re.search(ENCODING_PATTERN, line)
     if line_match:
-        encoding_name = _validate_encoding(line_match.group(1))
+        encoding_name = validate_encoding(line_match.group(1))
         return EncodingInfo(name=encoding_name, lineno=lineno, error=EncodingError.OK)
     return _find_file_encoding(f, lineno + 1)
 
 
-def _validate_encoding(encoding_name):
+def validate_encoding(encoding_name):
+    """Validate encoding name."""
     try:
         import codecs
         codecs.lookup(encoding_name)
@@ -100,7 +101,7 @@ def append_encoding(filename, encoding_name, force=False):
 
 
 def _append_file_encoding(f, encoding_name, replace=False):
-    encoding_name = _validate_encoding(encoding_name)
+    encoding_name = validate_encoding(encoding_name)
     encoding_line = ENCODING_LINE.format(**locals())
     try:
         encoding_info = _find_file_encoding(f)
